@@ -12,6 +12,7 @@ bookmarkRouter
     .get((req, res) => {
         res.json(bookmarks)
     })
+
     .post(bodyParser, (req, res) => {
         const { title, url, rating = 1, desc } = req.body
 
@@ -51,6 +52,9 @@ bookmarkRouter
             .location(`http://localhost:8000/bookmarks/${id}`)
             .json(bookmark)
     })
+
+bookmarkRouter
+    .route('/bookmarks/:id')
     .delete((req, res) => {
         const { id } = req.params
 
