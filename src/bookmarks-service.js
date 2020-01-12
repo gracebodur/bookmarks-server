@@ -4,7 +4,7 @@ const BookmarksService = {
         .select('*')
         .from('bookmarks')
     },
-    insertBookmarks(knex, newBookmarks) {
+    insertBookmark(knex, newBookmarks) {
         return knex
             .insert(newBookmarks)
             .into('bookmarks')
@@ -18,17 +18,16 @@ const BookmarksService = {
             .where('id', id)
             .first()
         },
-    deleteBookmarks(knex, id) {
+    deleteBookmark(knex, id) {
         return knex('bookmarks')
             .where({ id })
             .delete()
     },
-    updateBookmarks(knex, id, newBookmarksFields) {
+    updateBookmark(knex, id, newBookmarksFields) {
         return knex('bookmarks')
         .where({ id })
         .update(newBookmarksFields)
     }
 } 
-
 
 module.exports = BookmarksService
