@@ -4,24 +4,24 @@ function makeBookmarksArray() {
             id     : 1,
             title  : "Google",
             url    : "http://www.google.com",
-            rating : "3",
-            desc   : "Test description one",
+            rating : 3,
+            description   : "Internet-related services and products.",
         },
         {
             id     : 2,
             title  : "Thinkful",
             url    : "http://www.thinkful.com",
-            rating : "5",
-            desc   : "Test description two",
+            rating : 5,
+            description   : "1-on-1 learning to accelerate your way to a new high-growth tech career!",
         },
         {
             id     : 3,
             title  : "Github",
             url    : "http://www.github.com",
-            rating : "4",
-            desc   : "Test description three",
+            rating : 4,
+            description   : "Brings together the largest community of developers.",
         },
     ] 
 }
 
-module.exports = { makeBookmarksArray }
+module.exports = { makeBookmarksArray, }

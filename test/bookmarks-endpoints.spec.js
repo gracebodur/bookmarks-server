@@ -3,6 +3,7 @@ const knex = require('knex')
 const app = require('../src/app')
 const { makeBookmarksArray } = require('./bookmarks.fixtures')
 
+
 describe.only('Bookmarks Endpoints', function() {
     let db
    
@@ -25,6 +26,7 @@ describe.only('Bookmarks Endpoints', function() {
             it('responds with 200 and an empty list', () => {
                 return supertest(app)
                     .get('/bookmarks')
+                    .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
                     .expect(200, [])
             })
         })
@@ -38,7 +40,7 @@ describe.only('Bookmarks Endpoints', function() {
                     .insert(testBookmarks)
             })
 
-            it('responds with 200 and all of the bookmarks', () => {
+            it('GET /bookmarks responds with 200 and all of the bookmarks', () => {
                 return supertest(app)
                 .get('/bookmarks')
                 .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
@@ -48,11 +50,11 @@ describe.only('Bookmarks Endpoints', function() {
     })
     describe(`GET /bookmarks/:bookmark_id`, () => {
         context(`Given no bookmarks`, () => {
-            it(`responds with 200 and an empty list`, () => {
-                const bookmarkId = 123456
+            it(`responds with 404 `, () => {
                 return supertest(app)
-                    .get(`/bookmarks/${bookmarkId}`)
-                    .expect(404, { error: {message: `Bookmark doesn't exist`}})
+                    .get(`/bookmarks/123`)
+                    .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
+                    .expect(404, { error: {message: `Bookmark Not Found`}})
             })
         })
         context(`Given there are bookmarks in the database`, () => {
@@ -65,10 +67,10 @@ describe.only('Bookmarks Endpoints', function() {
             })
 
             it('responds with 200 and the specified bookmark', () => {
-                const bookmarkId = 2
-                const expectedBookmark = testBookmarks[bookmarkId - 1]
+                const bookmark_id = 2
+                const expectedBookmark = testBookmarks[bookmark_id - 1]
                 return supertest(app)
-                .get(`/bookmarks/${bookmarkId}`)
+                .get(`/bookmarks/${bookmark_id}`)
                 .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
                 .expect(200, expectedBookmark)
             })

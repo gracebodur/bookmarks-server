@@ -1,7 +1,7 @@
 INSERT INTO bookmarks (title, url, rating, description)
     VALUES
     ('Google', 'http://www.google.com', '3', 'Internet-related services and products.'),
-    ('Thinkful', 'http://www.thinkful.com', '5', '1-on-1 learning to accelerate your way to a new high-growth tech career!'),
+    ('Thinkful', 'http://www.thinkful.com', '5', ''),
     ('Github', 'http://www.github.com', '4', 'Brings together the largest community of developers.'),
     ('React', 'https://reactjs.org/', '5', 'A JavaScript library for building user interfaces'),
     ('Nodejs', 'https://nodejs.org/en/', '3', 'As an asynchronous event-driven JavaScript runtime, Node.js is designed to build scalable network applications.'),
