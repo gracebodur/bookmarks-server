@@ -3,7 +3,6 @@ const knex = require('knex')
 const app = require('../src/app')
 const { makeBookmarksArray } = require('./bookmarks.fixtures')
 
-
 describe.only('Bookmarks Endpoints', function() {
     let db
    
@@ -40,7 +39,7 @@ describe.only('Bookmarks Endpoints', function() {
                     .insert(testBookmarks)
             })
 
-            it('GET /bookmarks responds with 200 and all of the bookmarks', () => {
+            it('responds with 200 and all of the bookmarks', () => {
                 return supertest(app)
                 .get('/bookmarks')
                 .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
@@ -48,9 +47,11 @@ describe.only('Bookmarks Endpoints', function() {
             })
         })
     })
-    describe(`GET /bookmarks/:bookmark_id`, () => {
+
+    describe(`GET /bookmarks/:id`, () => {
         context(`Given no bookmarks`, () => {
-            it(`responds with 404 `, () => {
+            it(`responds with 404 when bookmarks doesn't exist`, () => {
+                // const bookmark_id = 123
                 return supertest(app)
                     .get(`/bookmarks/123`)
                     .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
@@ -67,10 +68,10 @@ describe.only('Bookmarks Endpoints', function() {
             })
 
             it('responds with 200 and the specified bookmark', () => {
-                const bookmark_id = 2
-                const expectedBookmark = testBookmarks[bookmark_id - 1]
+                const bookmarkId = 2
+                const expectedBookmark = testBookmarks[bookmarkId - 1]
                 return supertest(app)
-                .get(`/bookmarks/${bookmark_id}`)
+                .get(`/bookmarks/${bookmarkId}`)
                 .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
                 .expect(200, expectedBookmark)
             })

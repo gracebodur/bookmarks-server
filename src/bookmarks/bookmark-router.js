@@ -8,14 +8,6 @@ const BookmarksService = require('../bookmarks-service')
 const bookmarkRouter = express.Router()
 const bodyParser = express.json()
 
-// const bookmarkForm = bookmark => ({
-//     id: bookmarks.id,
-//     title: bookmarks.title,
-//     url: bookmarks.url,
-//     desc: bookmarks.desc,
-//     rating: Number(bookmarks.rating),
-// })
-
 bookmarkRouter
     .route('/bookmarks')
     .get((req, res, next) => {
@@ -69,32 +61,19 @@ bookmarkRouter
 
 bookmarkRouter
     .route('/bookmarks/:bookmark_id')
-    // .get((req, res) => {
-    //     const { id } = req.params
-
-    //     const bookmark = bookmarks.find(b => b.id == id)
-
-    //     if(!bookmark) {
-    //         logger.error(`Bookmark with id: ${id} not found.`)
-    //         return res
-    //             .status(404)
-    //             .send('Not found')
-    //     }
-
-    //     res.json(bookmark)
     .get((req, res, next) => {
-            // const knexInstance = req.app.get('db', bookmark_id)
-            const bookmark_id = req.params
-            BookmarksService.getBookmarksById(req.app.get('db'), bookmark_id)
-                .then(bookmark => {
-                    if(!bookmark) {
-                        logger.error(`Bookmark with id ${bookmark_id} not found.`)
-                        return res.status(404)
-                            .send({ error: { message: `Bookmark not found`}})
-                    }
-                    res.json(bookmarks)
-                })
-                .catch(next)
+        const { bookmark_id } = req.params
+        BookmarksService.getBookmarksById(req.app.get('db'), bookmark_id)
+            .then(bookmark => {
+                if(!bookmark) {
+                    logger.error(`Bookmark with id ${bookmark_id} not found.`)
+                    return res.status(404).json({
+                        error: { message: `Bookmark Not Found`}
+                    })  
+                }
+                res.json(bookmark)
+            })
+            .catch(next)
     })
 
     .delete((req, res) => {
@@ -108,8 +87,6 @@ bookmarkRouter
                 .status(400)
                 .send('Not found')
         }
-
-
 
         bookmarks.splice(bookmarkIndex, 1)
 
