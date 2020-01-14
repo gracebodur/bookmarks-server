@@ -57,6 +57,7 @@ describe.only('Bookmarks Endpoints', function() {
                     .expect(404, { error: {message: `Bookmark Not Found`}})
             })
         })
+
         context(`Given there are bookmarks in the database`, () => {
             const testBookmarks = makeBookmarksArray()
 
@@ -70,11 +71,37 @@ describe.only('Bookmarks Endpoints', function() {
                 const bookmarkId = 2
                 const expectedBookmark = testBookmarks[bookmarkId - 1]
                 return supertest(app)
-                .get(`/bookmarks/${bookmarkId}`)
-                .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
-                .expect(200, expectedBookmark)
+                    .get(`/bookmarks/${bookmarkId}`)
+                    .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
+                    .expect(200, expectedBookmark)
             })
         })
+
+        context(`Given an XSS attack article`, () => {
+            const maliciousBookmarks = {
+              id: 911,
+              title: 'Naughty naughty very naughty <script>alert("xss");</script>',
+              url: 'https://www.maliciousbookmark.com',
+              rating: 5,
+              description: `Bad image <img src="https://url.to.file.which/does-not.exist" onerror="alert(document.cookie);">. But not <strong>all</strong> bad.`
+            }
+       
+            beforeEach('insert malicious bookmark', () => {
+              return db
+                .into('bookmarks')
+                .insert([ maliciousBookmarks ])
+            })
+       
+            it('removes XSS attack content', () => {
+              return supertest(app)
+                .get(`/bookmarks/${maliciousBookmarks.id}`)
+                .expect(200)
+                .expect(res => {
+                  expect(res.body.title).to.eql('Naughty naughty very naughty &lt;script&gt;alert(\"xss\");&lt;/script&gt;')
+                  expect(res.body.description).to.eql(`Bad image <img src="https://url.to.file.which/does-not.exist">. But not <strong>all</strong> bad.`)
+                })
+            })
+          })
     })
 
     describe.only(`POST /bookmarks`, () => {

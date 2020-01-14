@@ -1,4 +1,5 @@
 const express = require('express')
+const xss = require('xss')
 const uuid = require('uuid/v4')
 const logger = require('../logger')
 const { bookmarks } = require('../store')
@@ -73,7 +74,13 @@ bookmarkRouter
                         error: { message: `Bookmark Not Found`}
                     })  
                 }
-                res.json(bookmarks)
+                res.json({
+                    id: bookmark.id,
+                    title: xss(bookmark.title), //sanitize title
+                    url: bookmark.url,
+                    rating: bookmark.rating,
+                    description: xss(bookmark.description), //sanitize description
+                })
             })
             .catch(next)
     })
