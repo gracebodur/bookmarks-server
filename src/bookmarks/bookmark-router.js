@@ -9,6 +9,14 @@ const BookmarksService = require('../bookmarks-service')
 const bookmarkRouter = express.Router()
 const bodyParser = express.json()
 
+const serializeBookmark = bookmark => ({
+    id: bookmark.id,
+    title: xss(bookmark.title),
+    url: bookmark.url,
+    rating: bookmark.rating,
+    description: xss(bookmark.description)
+ })
+
 bookmarkRouter
     .route('/bookmarks')
     .get((req, res, next) => {
@@ -30,24 +38,20 @@ bookmarkRouter
                 error: { message: `Missing '${key}' in request body` }
               })
             }
-          }
+            if(rating < 0 || rating > 5 || !Number.isInteger(rating)) {
+                logger.error(`Rating must be a number between 0 and 5`)
+                return res.status(400).json({
+                error: { message: `Missing 'rating' in request body` }
+            })
+        }
+            if(!validUrl.isWebUri(url)) {
+            logger.error(`Url is invalid`)
+            return res
+                .status(400)
+                .send('Url must be formed as HTTP or HTTPS')
+            }
+        }
 
-        // if(rating < 0 || rating > 5 || !Number.isInteger(rating)) {
-        //      logger.error(`Rating must be a number between 0 and 5`)
-        //      return res
-        //         .status(400).json({
-        //             error: { message: `Missing 'rating' in request body` }
-        //     })
-        // }
-
-        if(!validUrl.isWebUri(url)) {
-             logger.error(`Url is invalid`)
-             return res
-                 .status(400)
-                 .send('Url must be formed as HTTP or HTTPS')
-         }
-
-        // const id = uuid()
         BookmarksService.insertBookmark(
             req.app.get('db'),
             newBookmark
@@ -64,46 +68,33 @@ bookmarkRouter
         
 bookmarkRouter
     .route('/bookmarks/:bookmark_id')
+    .all((req, res, next) => {
+        BookmarksService.getBookmarksById(
+          req.app.get('db'),
+          req.params.bookmark_id
+        )
+          .then(bookmark => {
+            if (!bookmark) {
+              return res.status(404).json({
+                error: { message: `Bookmark doesn't exist` }
+              })
+            }
+            res.bookmark = bookmark // save the article for the next middleware
+            next() // don't forget to call next so the next middleware happens!
+          })
+          .catch(next)
+      })
     .get((req, res, next) => {
-        const { bookmark_id } = req.params
-        BookmarksService.getBookmarksById(req.app.get('db'), bookmark_id)
-            .then(bookmark => {
-                if(!bookmark) {
-                    logger.error(`Bookmark with id ${bookmark_id} not found.`)
-                    return res.status(404).json({
-                        error: { message: `Bookmark Not Found`}
-                    })  
-                }
-                res.json({
-                    id: bookmark.id,
-                    title: xss(bookmark.title), //sanitize title
-                    url: bookmark.url,
-                    rating: bookmark.rating,
-                    description: xss(bookmark.description), //sanitize description
-                })
-            })
-            .catch(next)
+        res.json(serializeBookmark(res.bookmark))
     })
-
-    .delete((req, res) => {
+    .delete((req, res, next) => {
         const { id } = req.params
-
-        const bookmarkIndex = bookmarks.findIndex(b => b.id == id)
-
-        if(bookmarkIndex === -1) {
-            logger.error(`Bookmark with id: ${id} not found.`)
-            return res
-                .status(400)
-                .send('Not found')
-        }
-
-        bookmarks.splice(bookmarkIndex, 1)
-
-        logger.info(`Bookmark with id: ${id} deleted.`)
-
-        res
-        .status(204)
-        .end()
-    })
+  
+        BookmarksService.deleteBookmark(req.app.get('db'), id)
+           .then( res.status(204).end())
+           .catch(next)
+     })
 
     module.exports = bookmarkRouter
+
+    

@@ -104,7 +104,7 @@ describe.only('Bookmarks Endpoints', function() {
           })
     })
 
-    describe.only(`POST /bookmarks`, () => {
+    describe(`POST /bookmarks`, () => {
         it(`creates a bookmark, responding with 201 and the new bookmark`,  function() {
         const newBookmark = {
             title  : "Test POST bookmark",
@@ -150,8 +150,45 @@ describe.only('Bookmarks Endpoints', function() {
                   .send(newBookmark)
                   .expect(400, {
                     error: { message: `Missing '${field}' in request body` }
-                  })
-              })
+                })
             })
-      })
+        })
+
+    describe.only(`DELETE /bookmarks/:id`, () => {
+        context(`Given no bookmarks`, () => {
+            it(`responds with 404`, () => {
+              const bookmarkId = 123456
+              return supertest(app)
+                .delete(`/bookmarks/${bookmarkId}`)
+                .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
+                .expect(404, { error: { message: `Bookmark doesn't exist` } })
+            })
+       })
+
+        context('Given there are bookmarks in the database', () => {
+            const testBookmarks = makeBookmarksArray()
+         
+            beforeEach('insert bookmarks', () => {
+                return db
+                 .into('bookmarks')
+                 .insert(testBookmarks)
+            })
+         
+            it('responds with 204 and removes the bookmark', () => {
+                const idToRemove = 2
+                const expectedBookmarks = testBookmarks.filter(bookmark => bookmark.id !== idToRemove)
+                return supertest(app)
+                .delete(`/bookmarks/${idToRemove}`)
+                .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
+                .expect(204)
+                .then(res =>
+                    supertest(app)
+                    .get(`/bookmarks`)
+                    .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
+                    .expect(expectedBookmarks)
+                    )
+                })
+            })
+        })
+    })
 })
