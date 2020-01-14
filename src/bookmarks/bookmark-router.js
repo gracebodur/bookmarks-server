@@ -11,54 +11,56 @@ const bodyParser = express.json()
 bookmarkRouter
     .route('/bookmarks')
     .get((req, res, next) => {
-            const knexInstance = req.app.get('db')
-            BookmarksService.getAllBookmarks(knexInstance)
-                .then(bookmarks => {
-                    res.json(bookmarks)
-                })
-                .catch(next)
-        })
-
-    .post(bodyParser, (req, res) => {
-        const { title, url, rating = 1, desc } = req.body
-
-        if(!title || !url || !desc) {
-            logger.error(`Title, url and description are required`)
-            return res
-                .status(400)
-                .send('Title, url and description are required')
-        }
-
-        if(rating < 0 || rating > 5 || !Number.isInteger(rating)) {
-            logger.error(`Rating must be a number between 0 and 5`)
-        }
-
-        if(!validUrl.isWebUri(url)) {
-            logger.error(`Url is invalid`)
-            return res
-                .status(400)
-                .send('Url must be formed as HTTP or HTTPS')
-        }
-
-        const id = uuid()
-        const bookmark = {
-            id,
-            title,
-            url,
-            rating,
-            desc
-        }
-
-        bookmarks.push(bookmark)
-        
-        logger.info(`Bookmark with id: ${id} created`)
-
-        res
-            .status(201)
-            .location(`http://localhost:8000/bookmarks/${id}`)
-            .json(bookmark)
+        const knexInstance = req.app.get('db')
+        BookmarksService.getAllBookmarks(knexInstance)
+            .then(bookmarks => {
+                res.json(bookmarks)
+            })
+        .catch(next)
     })
 
+    .post(bodyParser, (req, res, next) => {
+        const { title, url, rating, description } = req.body
+        const newBookmark = { title, url, rating, description }
+
+        for (const [key, value] of Object.entries(newBookmark)) {
+            if (value == null) {
+              return res.status(400).json({
+                error: { message: `Missing '${key}' in request body` }
+              })
+            }
+          }
+
+        // if(rating < 0 || rating > 5 || !Number.isInteger(rating)) {
+        //      logger.error(`Rating must be a number between 0 and 5`)
+        //      return res
+        //         .status(400).json({
+        //             error: { message: `Missing 'rating' in request body` }
+        //     })
+        // }
+
+        if(!validUrl.isWebUri(url)) {
+             logger.error(`Url is invalid`)
+             return res
+                 .status(400)
+                 .send('Url must be formed as HTTP or HTTPS')
+         }
+
+        // const id = uuid()
+        BookmarksService.insertBookmark(
+            req.app.get('db'),
+            newBookmark
+        )
+        .then(bookmark => {
+            logger.info(`Bookmark with id: ${bookmark.id} created`)
+            res
+            .status(201)
+            .location(`/bookmarks/${bookmark.id}`)
+            .json(bookmark)
+        })
+        .catch(next)
+    })
+        
 bookmarkRouter
     .route('/bookmarks/:bookmark_id')
     .get((req, res, next) => {
@@ -71,7 +73,7 @@ bookmarkRouter
                         error: { message: `Bookmark Not Found`}
                     })  
                 }
-                res.json(bookmark)
+                res.json(bookmarks)
             })
             .catch(next)
     })
