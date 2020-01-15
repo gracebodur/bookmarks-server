@@ -7,7 +7,6 @@ const logger = require('./logger')
 const { NODE_ENV } = require('./config')
 const bookmarkRouter = require('./bookmarks/bookmark-router')
 
-//create an Express application
 const app = express()
 
 const morganOption = (NODE_ENV === 'production') ? 'tiny' : 'common'
@@ -30,7 +29,7 @@ app.use(function validateBearerToken(req, res, next) {
     next()
 })
 
-app.use(bookmarkRouter)
+app.use('/api/bookmarks', bookmarkRouter)
 
 app.get('/', (req, res) => {
     res.send('Hello, world!')
