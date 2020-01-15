@@ -3,7 +3,7 @@ const knex = require('knex')
 const app = require('../src/app')
 const { makeBookmarksArray } = require('./bookmarks.fixtures')
 
-describe.only('Bookmarks Endpoints', function() {
+describe('Bookmarks Endpoints', function() {
     let db
    
     before('make knex instance', () => {
@@ -54,7 +54,7 @@ describe.only('Bookmarks Endpoints', function() {
                 return supertest(app)
                     .get(`/bookmarks/123`)
                     .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
-                    .expect(404, { error: {message: `Bookmark Not Found`}})
+                    .expect(404, { error: {message: `Bookmark doesn't exist`}})
             })
         })
 
@@ -77,7 +77,7 @@ describe.only('Bookmarks Endpoints', function() {
             })
         })
 
-        context(`Given an XSS attack article`, () => {
+        context(`Given an XSS attack bookmark`, () => {
             const maliciousBookmarks = {
               id: 911,
               title: 'Naughty naughty very naughty <script>alert("xss");</script>',
@@ -95,6 +95,7 @@ describe.only('Bookmarks Endpoints', function() {
             it('removes XSS attack content', () => {
               return supertest(app)
                 .get(`/bookmarks/${maliciousBookmarks.id}`)
+                .set('Authorization', `Bearer ${process.env.API_TOKEN}`)
                 .expect(200)
                 .expect(res => {
                   expect(res.body.title).to.eql('Naughty naughty very naughty &lt;script&gt;alert(\"xss\");&lt;/script&gt;')
@@ -154,7 +155,7 @@ describe.only('Bookmarks Endpoints', function() {
             })
         })
 
-    describe.only(`DELETE /bookmarks/:id`, () => {
+    describe(`DELETE /bookmarks/:id`, () => {
         context(`Given no bookmarks`, () => {
             it(`responds with 404`, () => {
               const bookmarkId = 123456

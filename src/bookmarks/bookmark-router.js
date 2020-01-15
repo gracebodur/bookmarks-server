@@ -42,13 +42,14 @@ bookmarkRouter
                 logger.error(`Rating must be a number between 0 and 5`)
                 return res.status(400).json({
                 error: { message: `Missing 'rating' in request body` }
-            })
-        }
+                })
+            }
             if(!validUrl.isWebUri(url)) {
             logger.error(`Url is invalid`)
             return res
-                .status(400)
-                .send('Url must be formed as HTTP or HTTPS')
+                .status(400).json({
+                    error: { message: `Missing 'url' in request body` }
+                })
             }
         }
 
@@ -88,10 +89,15 @@ bookmarkRouter
         res.json(serializeBookmark(res.bookmark))
     })
     .delete((req, res, next) => {
-        const { id } = req.params
+        const { bookmark_id } = req.params
   
-        BookmarksService.deleteBookmark(req.app.get('db'), id)
-           .then( res.status(204).end())
+        BookmarksService.deleteBookmark(
+            req.app.get('db'), 
+            bookmark_id)
+           .then(deletedBookmark => {
+               logger.info(`Bookmark with id ${bookmark_id} deleted`)
+               res.status(204).end()
+           })
            .catch(next)
      })
 
