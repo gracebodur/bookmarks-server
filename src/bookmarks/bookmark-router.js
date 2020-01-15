@@ -4,7 +4,7 @@ const uuid = require('uuid/v4')
 const logger = require('../logger')
 const { bookmarks } = require('../store')
 const validUrl = require('valid-url')
-const BookmarksService = require('../bookmarks-service')
+const BookmarksService = require('./bookmarks-service')
 
 const bookmarkRouter = express.Router()
 const bodyParser = express.json()
